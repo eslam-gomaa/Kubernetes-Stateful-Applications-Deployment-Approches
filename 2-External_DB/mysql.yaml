@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-external-db
+spec:
+  ports:
+    - port: 3306
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: mysql-external-db
+subsets:
+  - addresses:
+      - ip: 192.168.12.102
+    ports:
+      - port: 3306
+
+---
+# kubectl create secret generic wp-mysql-external-password --from-literal=mysql_user_password=password22
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wp-mysql-external-password
+data:
+  mysql_user_password: cGFzc3dvcmQyMgo= # echo 'password22' | base64
+
+

@@ -1,0 +1,75 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: mysql
+  labels:
+    app: wordpress
+    tier: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mysql
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.6
+          volumeMounts:
+            - name: ceph-disk
+              mountPath: /var/lib/mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-password
+                  key: mysql_root_password
+          ports:
+            - containerPort: 3306
+              name: mysql-port
+      volumes:
+        - name: ceph-disk
+          persistentVolumeClaim:
+            claimName: wp-mysql-pvc
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mysql
+  labels:
+    app: wordpress
+    tier: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress
+    tier: mysql
+
+# kubectl create secret generic wp-mysql-password --from-literal=mysql_root_password=password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wp-mysql-password
+data:
+  mysql_root_password: cGFzc3dvcmQK # echo 'password' | base64
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: wp-mysql-pvc
+spec:
+  storageClassName: ceph-block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
