@@ -6,13 +6,13 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: wordpress
+      app: wordpress-2
       tier: frontend
       test: external-db
   template:
     metadata:
       labels:
-        app: wordpress
+        app: wordpress-2
         tier: frontend
         test: external-db
     spec:
@@ -52,7 +52,7 @@ spec:
   ports:
     - port: 80
   selector:
-    app: wordpress
+    app: wordpress-2
     tier: frontend
     test: external-db
   type: NodePort
@@ -68,5 +68,3 @@ spec:
   resources:
     requests:
       storage: 1Gi
-
-
